@@ -20,4 +20,5 @@ protected:
 	virtual void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)override;
 public:
 	void Equip(USceneComponent* SceneComponent,FName SocketName);
+	void AttachWeaponToSocket(USceneComponent* SceneComponent, const FName& SocketName);
 };

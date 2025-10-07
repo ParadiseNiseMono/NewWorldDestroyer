@@ -14,7 +14,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class AItem;
 class UAnimMontage;
-
+class AWeapon;
 
 UCLASS()
 class DESTROYER_API ADestroyerCharacter : public ACharacter
@@ -50,6 +50,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Input)
 	UInputAction* AttackAction;
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* EquipAction;
 
 	/*
 	* animation montages
@@ -57,6 +59,19 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Montages)
 	UAnimMontage* AttackMontage;
 
+	UPROPERTY(EditAnywhere, Category = Montages)
+	UAnimMontage* EquipMontage;
+
+	AWeapon* EquippedWeapon;
+
+	UFUNCTION(BlueprintCallable)
+	void Disarm();
+
+	UFUNCTION(BlueprintCallable)
+	void Arm();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishEquipping();
 	/*
 	* input callback functions
 	*/
@@ -64,6 +79,7 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void PickUp(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
+	void Equip(const FInputActionValue& Value);
 
 	/*
 	* play montage functions
@@ -73,6 +89,10 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
+
+	bool CanDisarm();
+	bool CanArm();
+	void PlayEquipMontage(FName SectionName);
 private:
 	ECharacterState CharacterState=ECharacterState::ECS_UnEquipped;
 

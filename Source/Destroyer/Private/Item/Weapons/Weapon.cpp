@@ -15,7 +15,12 @@ void AWeapon::OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActo
 
 void AWeapon::Equip(USceneComponent* SceneComponent, FName SocketName)
 {
+	AttachWeaponToSocket(SceneComponent, SocketName);
+	ItemState = EItemState::EIS_Equipped;
+}
+
+void AWeapon::AttachWeaponToSocket(USceneComponent* SceneComponent, const FName& SocketName)
+{
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	ItemMesh->AttachToComponent(SceneComponent, AttachmentRules, SocketName);
-	ItemState = EItemState::EIS_Equipped;
 }

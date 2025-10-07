@@ -51,9 +51,27 @@ void ADestroyerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+void ADestroyerCharacter::Disarm()
+{
+	if (EquippedWeapon) {
+		EquippedWeapon->Equip(GetMesh(), FName("SpineSocket"));
+		ActionState = EActionState::ECS_Equipping;
+	}
+}
+void ADestroyerCharacter::Arm()
+{
+	if (EquippedWeapon) {
+		EquippedWeapon->Equip(GetMesh(), FName("LeftHandSocket"));
+		ActionState = EActionState::ECS_Equipping;
+	}
+}
+void ADestroyerCharacter::FinishEquipping()
+{
+	ActionState = EActionState::ECS_Unoccupied;
+}
 void ADestroyerCharacter::Move(const FInputActionValue& Value)
 {
-	if (ActionState == EActionState::ECS_Attacking) return;
+	if (ActionState != EActionState::ECS_Unoccupied) return;
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 	
 	const FRotator Rotation = Controller->GetControlRotation();
@@ -82,7 +100,10 @@ void ADestroyerCharacter::PickUp(const FInputActionValue& Value)
 		OverlappingWeapon->Equip(GetMesh(), FName("LeftHandSocket"));
 		OverlappingItem = nullptr;
 		CharacterState = ECharacterState::ECS_EquippedOneHanded;
+		EquippedWeapon = OverlappingWeapon;
 	}
+
+
 }
 
 void ADestroyerCharacter::Attack(const FInputActionValue& Value)
@@ -92,6 +113,22 @@ void ADestroyerCharacter::Attack(const FInputActionValue& Value)
 		PlayAttackMontage();
 	}
 	
+}
+
+void ADestroyerCharacter::Equip(const FInputActionValue& Value)
+{
+	if (CanDisarm())
+	{
+		PlayEquipMontage(FName("Unequip"));
+		CharacterState = ECharacterState::ECS_UnEquipped;
+		ActionState = EActionState::ECS_Equipping;
+	}
+	else if(CanArm())
+	{
+		PlayEquipMontage(FName("Equip"));
+		CharacterState = ECharacterState::ECS_EquippedOneHanded;
+		ActionState = EActionState::ECS_Equipping;
+	}
 }
 
 void ADestroyerCharacter::PlayAttackMontage()
@@ -116,6 +153,15 @@ void ADestroyerCharacter::PlayAttackMontage()
 		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
 	}
 }
+void ADestroyerCharacter::PlayEquipMontage(FName SectionName)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && EquipMontage)
+	{
+		AnimInstance->Montage_Play(EquipMontage);
+		AnimInstance->Montage_JumpToSection(SectionName, EquipMontage);
+	}
+}
 
 bool ADestroyerCharacter::CanAttack()
 {
@@ -126,6 +172,18 @@ void ADestroyerCharacter::AttackEnd()
 {
 	ActionState = EActionState::ECS_Unoccupied;
 }
+
+bool ADestroyerCharacter::CanDisarm()
+{
+	return CharacterState != ECharacterState::ECS_UnEquipped && ActionState == EActionState::ECS_Unoccupied;
+}
+
+bool ADestroyerCharacter::CanArm()
+{
+	return CharacterState == ECharacterState::ECS_UnEquipped && ActionState == EActionState::ECS_Unoccupied&&EquippedWeapon;
+}
+
+
 
 // Called to bind functionality to input
 void ADestroyerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -139,6 +197,7 @@ void ADestroyerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(PickAction, ETriggerEvent::Triggered, this, &ADestroyerCharacter::PickUp);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADestroyerCharacter::Attack);
+		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ADestroyerCharacter::Equip);
 	}
 }
 
