@@ -2,6 +2,8 @@
 
 #include "Item/Weapons/Weapon.h"
 #include "Character/DestroyerCharacter.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/SphereComponent.h"
 
 void AWeapon::OnSphereOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -17,6 +19,15 @@ void AWeapon::Equip(USceneComponent* SceneComponent, FName SocketName)
 {
 	AttachWeaponToSocket(SceneComponent, SocketName);
 	ItemState = EItemState::EIS_Equipped;
+	if (EquipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this, EquipSound, GetActorLocation()
+		);
+	}
+	if (Sphere) {
+		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }
 
 void AWeapon::AttachWeaponToSocket(USceneComponent* SceneComponent, const FName& SocketName)

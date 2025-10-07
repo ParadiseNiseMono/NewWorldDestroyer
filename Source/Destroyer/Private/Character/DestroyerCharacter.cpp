@@ -137,7 +137,7 @@ void ADestroyerCharacter::PlayAttackMontage()
 	if (AnimInstance && AttackMontage)
 	{
 		AnimInstance->Montage_Play(AttackMontage);
-		const int32 Section = FMath::RandRange(0, 1);
+		const int32 Section = FMath::RandRange(0, 2);
 		FName SectionName = FName();
 		switch (Section)
 		{
@@ -146,6 +146,9 @@ void ADestroyerCharacter::PlayAttackMontage()
 			break;
 		case 1:
 			SectionName = FName("Attack2");
+			break;
+		case 2:
+			SectionName = FName("Attack3");
 			break;
 		default:
 			break;

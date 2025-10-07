@@ -6,6 +6,7 @@
 #include "Item/Item.h"
 #include "Weapon.generated.h"
 
+class USoundBase;
 /**
  * 
  */
@@ -21,4 +22,8 @@ protected:
 public:
 	void Equip(USceneComponent* SceneComponent,FName SocketName);
 	void AttachWeaponToSocket(USceneComponent* SceneComponent, const FName& SocketName);
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* EquipSound;
 };
