@@ -4,7 +4,29 @@
 #include "Character/DestroyerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Interfaces/HitInterface.h"
 
+
+AWeapon::AWeapon()
+{
+	WeaponCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponCollisionBox"));
+	WeaponCollisionBox->SetupAttachment(RootComponent);
+	WeaponCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WeaponCollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	WeaponCollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+
+	TraceBoxStart = CreateDefaultSubobject<USceneComponent>(TEXT("TraceBoxStart"));
+	TraceBoxStart->SetupAttachment(RootComponent);
+	TraceBoxEnd = CreateDefaultSubobject<USceneComponent>(TEXT("TraceBoxEnd"));
+	TraceBoxEnd->SetupAttachment(RootComponent);
+}
+void AWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+	WeaponCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnBoxOverlap);
+}
 void AWeapon::OnSphereOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnSphereOverlapBegin(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
@@ -13,6 +35,36 @@ void AWeapon::OnSphereOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 void AWeapon::OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	Super::OnSphereOverlapEnd(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
+}
+
+void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	FVector Start = TraceBoxStart->GetComponentLocation();
+	FVector End = TraceBoxEnd->GetComponentLocation();
+
+	TArray<AActor*> IgnoreActors;	
+	IgnoreActors.Add(this);
+	FHitResult BoxHit;
+	UKismetSystemLibrary::BoxTraceSingle(
+		this,
+		Start,
+		End,
+		FVector(5.f,5.f,5.f),
+		TraceBoxStart->GetComponentRotation(),
+		ETraceTypeQuery::TraceTypeQuery1,
+		false,
+		IgnoreActors,
+		EDrawDebugTrace::ForDuration,
+		BoxHit,
+		true
+	);
+	if (BoxHit.GetActor())
+	{
+		IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
+		if (HitInterface) {
+			HitInterface->GetHit(BoxHit.ImpactPoint);
+		}
+	}
 }
 
 void AWeapon::Equip(USceneComponent* SceneComponent, FName SocketName)

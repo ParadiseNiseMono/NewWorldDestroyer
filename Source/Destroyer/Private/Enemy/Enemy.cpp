@@ -1,0 +1,86 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Enemy/Enemy.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Destroyer/DebugMacros.h"
+
+// Sets default values
+AEnemy::AEnemy()
+{
+ 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
+	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetGenerateOverlapEvents(true);
+}
+
+// Called when the game starts or when spawned
+void AEnemy::BeginPlay()
+{
+	Super::BeginPlay();
+	
+}
+
+void AEnemy::PlayHitReactMontage(const FName& SectionName)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HitReactMontage)
+	{
+		AnimInstance->Montage_Play(HitReactMontage);
+		AnimInstance->Montage_JumpToSection(SectionName, HitReactMontage);
+	}
+}
+
+// Called every frame
+void AEnemy::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+// Called to bind functionality to input
+void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+}
+
+void AEnemy::GetHit(const FVector& ImpactPoint )
+{
+	DRAW_SPHERE_CUSTOM(ImpactPoint, 8.f, 12, FColor::Red, false, 5.f);
+	PlayHitReactMontage(FName("FromFront"));
+
+	const FVector Forward = GetActorForwardVector();
+	const FVector ImpactLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
+	const FVector ToHit = (ImpactLowered - GetActorLocation()).GetSafeNormal();
+	const double CosTheta = FVector::DotProduct(Forward, ToHit);
+	double Theta= FMath::Acos(CosTheta);
+	Theta = FMath::RadiansToDegrees(Theta);
+	if (Theta <= 45.f)
+	{
+		PlayHitReactMontage(FName("FromFront"));
+	}
+	else if (Theta > 45.f && Theta <= 135.f)
+	{
+		const FVector CrossProduct = FVector::CrossProduct(Forward, ToHit);
+		if (CrossProduct.Z >0)// right side
+		{
+			PlayHitReactMontage(FName("FromRight"));
+		}
+		else
+		{
+			PlayHitReactMontage(FName("FromLeft"));
+		}
+	}
+	else if (Theta > 135.f)
+	{
+		PlayHitReactMontage(FName("FromBack"));
+	}
+
+}
+

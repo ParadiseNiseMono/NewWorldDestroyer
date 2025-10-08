@@ -10,6 +10,8 @@
 #include "Item/Item.h"
 #include "Item/Weapons/Weapon.h"
 #include "Animation/AnimMontage.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 ADestroyerCharacter::ADestroyerCharacter()
@@ -61,7 +63,7 @@ void ADestroyerCharacter::Disarm()
 void ADestroyerCharacter::Arm()
 {
 	if (EquippedWeapon) {
-		EquippedWeapon->Equip(GetMesh(), FName("LeftHandSocket"));
+		EquippedWeapon->Equip(GetMesh(), FName("RightHandSocket"));
 		ActionState = EActionState::ECS_Equipping;
 	}
 }
@@ -97,7 +99,7 @@ void ADestroyerCharacter::PickUp(const FInputActionValue& Value)
 {
 	AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
 	if (OverlappingWeapon) {
-		OverlappingWeapon->Equip(GetMesh(), FName("LeftHandSocket"));
+		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
 		OverlappingItem = nullptr;
 		CharacterState = ECharacterState::ECS_EquippedOneHanded;
 		EquippedWeapon = OverlappingWeapon;
@@ -156,7 +158,7 @@ void ADestroyerCharacter::PlayAttackMontage()
 		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
 	}
 }
-void ADestroyerCharacter::PlayEquipMontage(FName SectionName)
+void ADestroyerCharacter::PlayEquipMontage(const FName& SectionName)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && EquipMontage)
@@ -201,6 +203,13 @@ void ADestroyerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 		EnhancedInputComponent->BindAction(PickAction, ETriggerEvent::Triggered, this, &ADestroyerCharacter::PickUp);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADestroyerCharacter::Attack);
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ADestroyerCharacter::Equip);
+	}
+}
+
+void ADestroyerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled)
+{
+	if (EquippedWeapon && EquippedWeapon->GetWeaponCollisionBox()) {
+		EquippedWeapon->GetWeaponCollisionBox()->SetCollisionEnabled(CollisionEnabled);
 	}
 }
 

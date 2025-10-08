@@ -3,6 +3,7 @@
 
 #define DRAW_SPHERE(Location) if(GetWorld()) DrawDebugSphere(GetWorld(), Location, 32.0f, 12, FColor::Red, true);  
 #define DRAW_SPHERE_SINGLE_FRAME(Location) if(GetWorld()) DrawDebugSphere(GetWorld(), Location, 32.0f, 12, FColor::Red, false, -1.f);
+#define DRAW_SPHERE_CUSTOM(Location, Radius, Segments, Color, bPersistentLines, LifeTime) if(GetWorld()) DrawDebugSphere(GetWorld(), Location, Radius, Segments, Color, bPersistentLines, LifeTime);
 #define DRAW_LINE(StartLocation, EndLocation) if(GetWorld()) DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Green, true, -1.f, 0, 5.f);
 #define DRAW_LINE_SINGLE_FRAME(StartLocation, EndLocation) if(GetWorld()) DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Green, false, -1.f, 0, 5.f);
 #define DRAW_POINT(Location) if(GetWorld()) DrawDebugPoint(GetWorld(), Location, 10.f, FColor::Blue, true); 
