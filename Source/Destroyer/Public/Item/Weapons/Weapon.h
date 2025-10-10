@@ -25,6 +25,9 @@ protected:
 
 	UFUNCTION()
 	void OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateFields(const FVector& FieldLocation);
 public:
 	AWeapon();
 	void Equip(USceneComponent* SceneComponent,FName SocketName);

@@ -28,9 +28,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Sine Parameter")
-	float Amplitude = 20.f;
+	float Amplitude = 2.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sine Parameter")
-	float TimeConstant = 5.f;
+	float TimeConstant = 0.5;
 	UFUNCTION(BlueprintPure)
 	float TransformedSin();
 	UFUNCTION(BlueprintPure)

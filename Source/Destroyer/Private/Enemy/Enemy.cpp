@@ -51,7 +51,7 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void AEnemy::GetHit(const FVector& ImpactPoint )
+void AEnemy::GetHit_Implementation(const FVector& ImpactPoint )
 {
 	//DRAW_SPHERE_CUSTOM(ImpactPoint, 8.f, 12, FColor::Red, false, 5.f);
 
