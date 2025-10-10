@@ -22,6 +22,8 @@ public:
 
 	virtual void GetHit(const FVector& ImpactPoint) override;
 
+	void DirectionalHitReact(const FVector& ImpactPoint);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -31,6 +33,12 @@ private:
 	// Animation montages
 	UPROPERTY(EditAnywhere, Category = Montages)
 	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditAnywhere, Category = Montages)
+	USoundBase* HitSound;
+
+	UPROPERTY(EditAnywhere, Category = Particles)
+	UParticleSystem* HitParticles;
 public:	
 
 

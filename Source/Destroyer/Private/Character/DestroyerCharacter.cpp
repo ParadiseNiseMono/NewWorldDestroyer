@@ -210,6 +210,7 @@ void ADestroyerCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type Coll
 {
 	if (EquippedWeapon && EquippedWeapon->GetWeaponCollisionBox()) {
 		EquippedWeapon->GetWeaponCollisionBox()->SetCollisionEnabled(CollisionEnabled);
+		EquippedWeapon->ActorsToIgnore.Empty();
 	}
 }
 

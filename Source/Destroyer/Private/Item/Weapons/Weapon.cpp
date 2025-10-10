@@ -44,6 +44,10 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 
 	TArray<AActor*> IgnoreActors;	
 	IgnoreActors.Add(this);
+	for(AActor* Actor : ActorsToIgnore)
+	{
+		IgnoreActors.AddUnique(Actor);
+	}
 	FHitResult BoxHit;
 	UKismetSystemLibrary::BoxTraceSingle(
 		this,
@@ -54,7 +58,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 		ETraceTypeQuery::TraceTypeQuery1,
 		false,
 		IgnoreActors,
-		EDrawDebugTrace::ForDuration,
+		EDrawDebugTrace::None,
 		BoxHit,
 		true
 	);
@@ -63,7 +67,8 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 		IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
 		if (HitInterface) {
 			HitInterface->GetHit(BoxHit.ImpactPoint);
-		}
+		} 
+		ActorsToIgnore.Add(BoxHit.GetActor());
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Destroyer/DebugMacros.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -52,14 +53,33 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AEnemy::GetHit(const FVector& ImpactPoint )
 {
-	DRAW_SPHERE_CUSTOM(ImpactPoint, 8.f, 12, FColor::Red, false, 5.f);
-	PlayHitReactMontage(FName("FromFront"));
+	//DRAW_SPHERE_CUSTOM(ImpactPoint, 8.f, 12, FColor::Red, false, 5.f);
 
+	DirectionalHitReact(ImpactPoint);
+
+	if (HitSound) {
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			HitSound,
+			ImpactPoint
+		);
+	}
+	if (HitParticles) {
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			HitParticles,
+			ImpactPoint
+		);
+	}
+}
+
+void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
+{
 	const FVector Forward = GetActorForwardVector();
 	const FVector ImpactLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
 	const FVector ToHit = (ImpactLowered - GetActorLocation()).GetSafeNormal();
 	const double CosTheta = FVector::DotProduct(Forward, ToHit);
-	double Theta= FMath::Acos(CosTheta);
+	double Theta = FMath::Acos(CosTheta);
 	Theta = FMath::RadiansToDegrees(Theta);
 	if (Theta <= 45.f)
 	{
@@ -81,6 +101,5 @@ void AEnemy::GetHit(const FVector& ImpactPoint )
 	{
 		PlayHitReactMontage(FName("FromBack"));
 	}
-
 }
 

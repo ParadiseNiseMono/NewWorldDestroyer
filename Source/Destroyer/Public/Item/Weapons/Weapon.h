@@ -29,6 +29,7 @@ public:
 	AWeapon();
 	void Equip(USceneComponent* SceneComponent,FName SocketName);
 	void AttachWeaponToSocket(USceneComponent* SceneComponent, const FName& SocketName);
+	TArray<AActor*> ActorsToIgnore;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
@@ -42,6 +43,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Trace Box")
 	USceneComponent* TraceBoxEnd;
+
+
 
 public:
 	FORCEINLINE UBoxComponent* GetWeaponCollisionBox() const { return WeaponCollisionBox; }
