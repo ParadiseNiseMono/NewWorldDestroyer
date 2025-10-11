@@ -9,7 +9,10 @@
 #include "Component/AttributeComponent.h"
 #include "Components/WidgetComponent.h"
 #include "HUD/HealthComponent.h"
-
+#include "GameFramework/CharacterMovementComponent.h"
+#include "AIController.h"
+#include "NavigationPath.h"
+#include "Navigation/PathFollowingComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -26,6 +29,11 @@ AEnemy::AEnemy()
 	Attribute = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attribute Component"));
 	HealthBarWidget = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Bar"));
 	HealthBarWidget->SetupAttachment(GetRootComponent());
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = false;
 }
 
 // Called when the game starts or when spawned
@@ -36,7 +44,20 @@ void AEnemy::BeginPlay()
 		HealthBarWidget->SetHealthPercent(Attribute->GetHealth() / Attribute->GetMaxHealth());
 		HealthBarWidget->SetVisibility(false);
 	}
-	
+	EnemyController= Cast<AAIController>(GetController());
+	if (EnemyController && PartrolTarget) {
+		FAIMoveRequest MoveRequest;
+		MoveRequest.SetGoalActor(PartrolTarget);
+		MoveRequest.SetAcceptanceRadius(15.f);
+		FNavPathSharedPtr NavPath;
+		EnemyController->MoveTo(MoveRequest, &NavPath);
+		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
+		for (auto& point : PathPoints) {
+			const FVector& Location = point.Location;
+			DrawDebugSphere(GetWorld(), Location, 12.f, 12.f, FColor::Blue, true);
+		}
+
+	}
 }
 
 void AEnemy::PlayHitReactMontage(const FName& SectionName)

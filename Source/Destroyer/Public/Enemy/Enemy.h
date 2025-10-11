@@ -29,6 +29,18 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	/*
+	* navigation
+	*/
+	UPROPERTY()
+	class AAIController* EnemyController;
+
+	//Current Partrol Target
+	UPROPERTY(EditInstanceOnly,Category="AI Navigation")
+	AActor* PartrolTarget;
+
+	UPROPERTY(EditInstanceOnly, Category = "AI Navigation")
+	TArray<AActor*> PartrolTargets;
 protected:
 	virtual void BeginPlay() override;
 
