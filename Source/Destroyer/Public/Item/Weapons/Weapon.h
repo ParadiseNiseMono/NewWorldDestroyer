@@ -30,7 +30,7 @@ protected:
 	void CreateFields(const FVector& FieldLocation);
 public:
 	AWeapon();
-	void Equip(USceneComponent* SceneComponent,FName SocketName);
+	void Equip(USceneComponent* SceneComponent,FName SocketName,AActor* NewOwner,APawn* NewInstigator);
 	void AttachWeaponToSocket(USceneComponent* SceneComponent, const FName& SocketName);
 	TArray<AActor*> ActorsToIgnore;
 
@@ -47,7 +47,8 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Trace Box")
 	USceneComponent* TraceBoxEnd;
 
-
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	float Damage=20.f;
 
 public:
 	FORCEINLINE UBoxComponent* GetWeaponCollisionBox() const { return WeaponCollisionBox; }

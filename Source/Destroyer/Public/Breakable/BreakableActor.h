@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/HitInterface.h"
+#include "Chaos/ChaosGameplayEventDispatcher.h"
 #include "BreakableActor.generated.h"
 
 class UGeometryCollectionComponent;
@@ -23,12 +24,15 @@ protected:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Components")
 	UCapsuleComponent* CapsuleComponent;
+
+	UFUNCTION()
+	void OnChaosBreak(const FChaosBreakEvent& BreakEvent);
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UGeometryCollectionComponent* GeometryCollectionComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Treasure")
-	TSubclassOf<class ATreasure> TreasureClass;
+	TArray<TSubclassOf<class ATreasure>> TreasureClasses;
 
 
 };

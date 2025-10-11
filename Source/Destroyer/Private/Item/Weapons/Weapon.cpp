@@ -7,7 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Interfaces/HitInterface.h"
-
+#include "NiagaraComponent.h"
 
 AWeapon::AWeapon()
 {
@@ -48,6 +48,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 	{
 		IgnoreActors.AddUnique(Actor);
 	}
+	ActorsToIgnore.Add(this);
 	FHitResult BoxHit;
 	UKismetSystemLibrary::BoxTraceSingle(
 		this,
@@ -57,24 +58,33 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 		TraceBoxStart->GetComponentRotation(),
 		ETraceTypeQuery::TraceTypeQuery1,
 		false,
-		IgnoreActors,
+		ActorsToIgnore,
 		EDrawDebugTrace::None,
 		BoxHit,
 		true
 	);
 	if (BoxHit.GetActor())
 	{
+		UGameplayStatics::ApplyDamage(
+			BoxHit.GetActor(),
+			Damage,
+			GetInstigator()->GetController(),
+			this,
+			UDamageType::StaticClass()
+		);
+		ActorsToIgnore.Add(BoxHit.GetActor());
 		IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
 		if (HitInterface) {
 			HitInterface->Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
 		} 
-		ActorsToIgnore.Add(BoxHit.GetActor());
 		CreateFields(BoxHit.ImpactPoint);
 	}
 }
 
-void AWeapon::Equip(USceneComponent* SceneComponent, FName SocketName)
+void AWeapon::Equip(USceneComponent* SceneComponent, FName SocketName , AActor* NewOwner, APawn* NewInstigator)
 {
+	SetOwner(NewOwner);
+	SetInstigator(NewInstigator);
 	AttachWeaponToSocket(SceneComponent, SocketName);
 	ItemState = EItemState::EIS_Equipped;
 	if (EquipSound)
@@ -85,6 +95,9 @@ void AWeapon::Equip(USceneComponent* SceneComponent, FName SocketName)
 	}
 	if (Sphere) {
 		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+	if (EmbersEffect) {
+		EmbersEffect->Deactivate();
 	}
 }
 

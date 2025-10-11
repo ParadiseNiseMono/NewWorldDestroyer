@@ -30,7 +30,7 @@ protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Sine Parameter")
 	float Amplitude = 2.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sine Parameter")
-	float TimeConstant = 0.5;
+	float TimeConstant = 5;
 	UFUNCTION(BlueprintPure)
 	float TransformedSin();
 	UFUNCTION(BlueprintPure)
@@ -52,6 +52,9 @@ protected:
 	virtual void OnSphereOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	EItemState ItemState = EItemState::EIS_Hovering;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraComponent* EmbersEffect;
 private:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,meta=(AllowPrivateAccess="true"))
 	float RunningTime;

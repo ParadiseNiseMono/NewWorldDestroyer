@@ -8,7 +8,7 @@ public class Destroyer : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "EnhancedInput", "Core", "CoreUObject", "Engine", "InputCore","GeometryCollectionEngine" });
+		PublicDependencyModuleNames.AddRange(new string[] { "EnhancedInput", "Core", "CoreUObject", "Engine", "InputCore","GeometryCollectionEngine","Niagara","UMG" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

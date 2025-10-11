@@ -20,13 +20,22 @@ ABreakableActor::ABreakableActor()
 	CapsuleComponent->SetupAttachment(GetRootComponent());
 	CapsuleComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CapsuleComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+
+
 }
 
 void ABreakableActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
+		// 綁定 Break Event
+	if (UWorld* World = GetWorld())
+	{
+			GeometryCollectionComponent->OnChaosBreakEvent.AddDynamic(this, &ABreakableActor::OnChaosBreak);
+	}
 }
+
+
 
 void ABreakableActor::Tick(float DeltaTime)
 {
@@ -36,13 +45,19 @@ void ABreakableActor::Tick(float DeltaTime)
 
 void ABreakableActor::GetHit_Implementation(const FVector& ImpactPoint)
 {
-	CapsuleComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-
 	UWorld* World = GetWorld();
-	if (World&&TreasureClass) {
+	if (World && TreasureClasses.Num() > 0) {
 		FVector Location = GetActorLocation();
 		Location.Z += 50.f;
-		World->SpawnActor<ATreasure>(TreasureClass, Location, GetActorRotation());
+		int32 RandomIndex = FMath::RandRange(0, TreasureClasses.Num() - 1);
+		World->SpawnActor<ATreasure>(TreasureClasses[RandomIndex], Location, GetActorRotation());
 	}
+
+}
+void ABreakableActor::OnChaosBreak(const FChaosBreakEvent& BreakEvent)
+{
+	SetLifeSpan(3.f);
+	CapsuleComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+
 }
 
