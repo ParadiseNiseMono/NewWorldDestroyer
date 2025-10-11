@@ -13,6 +13,8 @@
 #include "AIController.h"
 #include "NavigationPath.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "math.h"
+#include "Perception/PawnSensingComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -34,7 +36,12 @@ AEnemy::AEnemy()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
+
+	PawnSense = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSecsingComponent"));
+	PawnSense->SightRadius = 4000.f;
+	PawnSense->SetPeripheralVisionAngle(45.f);
 }
+
 
 // Called when the game starts or when spawned
 void AEnemy::BeginPlay()
@@ -45,19 +52,12 @@ void AEnemy::BeginPlay()
 		HealthBarWidget->SetVisibility(false);
 	}
 	EnemyController= Cast<AAIController>(GetController());
-	if (EnemyController && PartrolTarget) {
-		FAIMoveRequest MoveRequest;
-		MoveRequest.SetGoalActor(PartrolTarget);
-		MoveRequest.SetAcceptanceRadius(15.f);
-		FNavPathSharedPtr NavPath;
-		EnemyController->MoveTo(MoveRequest, &NavPath);
-		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
-		for (auto& point : PathPoints) {
-			const FVector& Location = point.Location;
-			DrawDebugSphere(GetWorld(), Location, 12.f, 12.f, FColor::Blue, true);
-		}
+	MoveToTarget(PatrolTarget);
 
+	if (PawnSense) {
+		PawnSense->OnSeePawn.AddDynamic(this,&AEnemy::OnSeePawn);
 	}
+	GetCharacterMovement()->MaxWalkSpeed = 120.f;
 }
 
 void AEnemy::PlayHitReactMontage(const FName& SectionName)
@@ -114,19 +114,91 @@ void AEnemy::Die()
 	}
 }
 
+void AEnemy::MoveToTarget(AActor* Target)
+{
+	if (EnemyController == nullptr || Target == nullptr) return;
+		FAIMoveRequest MoveRequest;
+		MoveRequest.SetGoalActor(Target);
+		MoveRequest.SetAcceptanceRadius(15.f);
+		EnemyController->MoveTo(MoveRequest);
+}
+
+AActor* AEnemy::ChoosePartrolTarget()
+{
+			TArray<AActor*> VaildTargets;
+			for (auto Target : PatrolTargets) {
+				if (Target != PatrolTarget) {
+					VaildTargets.AddUnique(Target);
+				}
+			}
+			const int32 NumPartrolTargets = VaildTargets.Num();
+			if (NumPartrolTargets > 0) {
+				const int32 PartrolSelection = FMath::RandRange(0, NumPartrolTargets - 1);
+				return VaildTargets[PartrolSelection];
+			}
+	return nullptr;
+}
+
+bool AEnemy::InTargetRange(AActor* Target, double Radius)
+{
+	if (Target == nullptr) return false;
+	const double DistanceToTarget = (Target->GetActorLocation() - GetActorLocation()).Size();
+	DRAW_SPHERE_SINGLE_FRAME(GetActorLocation());
+	DRAW_SPHERE_SINGLE_FRAME(Target->GetActorLocation());
+	bool InRange = DistanceToTarget <= Radius;
+	return InRange;
+}
+
+void AEnemy::OnSeePawn(APawn* Target)
+{
+	if (EnemyState == EEnemyState::EES_Chasing)return;
+	if (Target->ActorHasTag("DestroyerCharacter")) {
+		EnemyState = EEnemyState::EES_Chasing;
+		GetWorldTimerManager().ClearTimer(PatrolTimer);
+		GetCharacterMovement()->MaxWalkSpeed = 300.f;
+		CombatTarget = Target;
+		MoveToTarget(CombatTarget);
+	}
+}
+
+void AEnemy::PatrolTimerFinished()
+{
+	MoveToTarget(PatrolTarget);
+}
+
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (CombatTarget) {
-		const double DistanceToTarget = (CombatTarget->GetActorLocation() - GetActorLocation()).Size();
-		if (DistanceToTarget > CombatRadius) {
-			CombatTarget = nullptr;
-			if (HealthBarWidget) {
-				HealthBarWidget->SetVisibility(false);
-			}
+	if (EnemyState > EEnemyState::EES_Patrolling) {
+		CheckCombatTarget();
+	}
+	else {
+		CheckPartrolTarget();
+	}
+}
+
+void AEnemy::CheckPartrolTarget()
+{
+	if (InTargetRange(PatrolTarget, PatrolRadius)) {
+		PatrolTarget = ChoosePartrolTarget();
+		const double WaitTime = FMath::RandRange(WaitMin, WaitMax);
+		GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::PatrolTimerFinished, WaitTime);
+	}
+}
+
+void AEnemy::CheckCombatTarget()
+{
+	if (!InTargetRange(CombatTarget, CombatRadius)) {
+		//ouside combat range,lost interest
+		CombatTarget = nullptr;
+		if (HealthBarWidget) {
+			HealthBarWidget->SetVisibility(false);
 		}
+		EnemyState = EEnemyState::EES_Patrolling;
+		GetCharacterMovement()->MaxWalkSpeed = 125.f;
+		MoveToTarget(PatrolTarget);
 	}
 }
 

@@ -43,8 +43,7 @@ void ADestroyerCharacter::BeginPlay()
 				Subsystem->AddMappingContext(DestroyerContext, 0);
 		}
 	}
-
-
+	Tags.Add(TEXT("DestroyerCharacter"));
 }
 
 // Called every frame
