@@ -99,11 +99,24 @@ void ADestroyerCharacter::PickUp(const FInputActionValue& Value)
 {
 	AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
 	if (OverlappingWeapon) {
-		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
-		OverlappingWeapon->SetInstigator(this);
-		OverlappingWeapon->SetOwner(this);
+		
+
+        EWeaponType OverlappinWeaponType = OverlappingWeapon->GetWeaponType();
+        if (OverlappinWeaponType == EWeaponType::EWT_OneHand) {
+			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
+			OverlappingWeapon->SetInstigator(this);
+			OverlappingWeapon->SetOwner(this);
+			OverlappingItem = nullptr;
+            CharacterState = ECharacterState::ECS_EquippedOneHanded;
+		}
+		else if (OverlappinWeaponType == EWeaponType::EWT_TwoHand) {
+			OverlappingWeapon->Equip(GetMesh(), FName("LeftHandSocket"), this, this);
+			OverlappingWeapon->SetInstigator(this);
+			OverlappingWeapon->SetOwner(this);
+			OverlappingItem = nullptr;
+			CharacterState = ECharacterState::ECS_EquippedTwoHanded;
+		}
 		OverlappingItem = nullptr;
-		CharacterState = ECharacterState::ECS_EquippedOneHanded;
 		EquippedWeapon = OverlappingWeapon;
 	}
 }

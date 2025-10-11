@@ -8,6 +8,14 @@
 
 class USoundBase;
 class UBoxComponent;
+
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+	EWT_OneHand UMETA(DisplayName = "OneHand"),
+	EWT_TwoHand UMETA(DisplayName = "TwoHand"),
+
+};
 /**
  * 
  */
@@ -15,7 +23,7 @@ UCLASS()
 class DESTROYER_API AWeapon : public AItem
 {
 	GENERATED_BODY()
-	
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -30,9 +38,10 @@ protected:
 	void CreateFields(const FVector& FieldLocation);
 public:
 	AWeapon();
-	void Equip(USceneComponent* SceneComponent,FName SocketName,AActor* NewOwner,APawn* NewInstigator);
+	void Equip(USceneComponent* SceneComponent, FName SocketName, AActor* NewOwner, APawn* NewInstigator);
 	void AttachWeaponToSocket(USceneComponent* SceneComponent, const FName& SocketName);
 	TArray<AActor*> ActorsToIgnore;
+
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
@@ -48,8 +57,12 @@ private:
 	USceneComponent* TraceBoxEnd;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	float Damage=20.f;
+	float Damage = 20.f;
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	EWeaponType WeaponType;
+
 
 public:
 	FORCEINLINE UBoxComponent* GetWeaponCollisionBox() const { return WeaponCollisionBox; }
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 };
